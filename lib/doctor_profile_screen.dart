@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'DoctorSchedulePage.dart';
 
 // --- (Optionnel) Classe Doctor pour la cohérence des données ---
 class Doctor {
@@ -38,7 +39,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  
+
   // Variables pour les champs spécifiques
   String? _selectedSpecialty;
   TimeOfDay _dailyStartTime = const TimeOfDay(hour: 9, minute: 0); // 09:00
@@ -46,7 +47,12 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
 
   // Liste des spécialités disponibles
   final List<String> _specialties = [
-    'Cardiologie', 'Dermatologie', 'Généraliste', 'Pédiatrie', 'Neurologie', 'Ophtalmologie'
+    'Cardiologie',
+    'Dermatologie',
+    'Généraliste',
+    'Pédiatrie',
+    'Neurologie',
+    'Ophtalmologie',
   ];
 
   // Fonction pour afficher le sélecteur d'heure
@@ -83,9 +89,13 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
       // --- TODO: Appeler l'API POST/PUT ici ---
       // Exemple de données à envoyer :
       print('Profil mis à jour :');
-      print('Nom: ${newDoctorProfile.lastName}, Spécialité: ${newDoctorProfile.specialty}');
-      print('Heures: ${newDoctorProfile.dailyStartHour} - ${newDoctorProfile.dailyEndHour}');
-      
+      print(
+        'Nom: ${newDoctorProfile.lastName}, Spécialité: ${newDoctorProfile.specialty}',
+      );
+      print(
+        'Heures: ${newDoctorProfile.dailyStartHour} - ${newDoctorProfile.dailyEndHour}',
+      );
+
       // Afficher une confirmation
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profil mis à jour avec succès!')),
@@ -137,16 +147,20 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
             children: <Widget>[
               // --- 1. Photo de Profil ---
               _buildProfilePicture(),
-              
+
               const SizedBox(height: 30),
 
               // --- 2. Informations Personnelles ---
               const Text(
                 'Informations Personnelles',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
               const Divider(height: 15, thickness: 1),
-              
+
               _buildInputField(
                 controller: _firstNameController,
                 labelText: 'Prénom',
@@ -158,7 +172,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                 icon: Icons.group_outlined,
               ),
               _buildSpecialtyDropdown(),
-              
+
               _buildInputField(
                 controller: _phoneController,
                 labelText: 'Téléphone',
@@ -173,17 +187,51 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
               ),
 
               const SizedBox(height: 30),
-
-              // --- 3. Disponibilités Journalières ---
-              const Text(
-                'Disponibilités Journalières',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+              Text(
+                'Planning',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
               const Divider(height: 15, thickness: 1),
-              
-              _buildHoursPicker(context),
-              
-              const SizedBox(height: 40),
+
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(
+                  vertical: 20,
+                ), // espace avant/après
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DoctorSchedulePage(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.schedule, color: Colors.teal),
+                  label: const Text(
+                    "Définir mon planning",
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: Colors.teal, width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor: Colors.white, // bouton clair
+                    foregroundColor: Colors.teal,
+                    elevation: 0,
+                  ),
+                ),
+              ),
 
               // --- 4. Bouton d'Action ---
               ElevatedButton(
@@ -191,7 +239,9 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
                   padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: const Text(
                   'Mettre à jour le profil',
@@ -212,11 +262,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
           const CircleAvatar(
             radius: 50,
             backgroundColor: Color(0xFFE0F7FA), // Light Teal Background
-            child: Icon(
-              Icons.person,
-              size: 60,
-              color: Colors.teal,
-            ),
+            child: Icon(Icons.person, size: 60, color: Colors.teal),
           ),
           Positioned(
             bottom: 0,
@@ -283,7 +329,10 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
       child: DropdownButtonFormField<String>(
         decoration: InputDecoration(
           labelText: 'Spécialité',
-          prefixIcon: Icon(Icons.medical_services_outlined, color: Colors.teal.shade300),
+          prefixIcon: Icon(
+            Icons.medical_services_outlined,
+            color: Colors.teal.shade300,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide(color: Colors.teal.shade100),
@@ -308,7 +357,8 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
             _selectedSpecialty = newValue;
           });
         },
-        validator: (value) => value == null ? 'Veuillez choisir une spécialité' : null,
+        validator: (value) =>
+            value == null ? 'Veuillez choisir une spécialité' : null,
       ),
     );
   }
@@ -343,15 +393,21 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
 
   // Boîte individuelle pour l'heure
   Widget _buildTimeBox(
-      BuildContext context,
-      String label,
-      TimeOfDay time,
-      VoidCallback onTap,
-      ) {
+    BuildContext context,
+    String label,
+    TimeOfDay time,
+    VoidCallback onTap,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.black54)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.black54,
+          ),
+        ),
         const SizedBox(height: 5),
         InkWell(
           onTap: onTap,
@@ -368,7 +424,10 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                 const SizedBox(width: 8),
                 Text(
                   _formatTimeOfDay(time),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),

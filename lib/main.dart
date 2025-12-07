@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'AuthPage.dart'; // Assure-toi que le fichier est bien importé
-import 'doctor_profile_screen.dart'; // Assurez-vous d'importer le fichier
 
 void main() {
   runApp(const MyApp());

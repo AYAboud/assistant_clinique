@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'doctor_profile_screen.dart';
-
+import 'DoctorHomePage.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -11,8 +10,8 @@ class AuthPage extends StatefulWidget {
 
 class _AuthPageState extends State<AuthPage> {
   bool isLogin = true;
-  String selectedRole = "Patient"; 
-  String role = "Patient"; 
+  String selectedRole = "Patient";
+  String role = "Patient";
 
   // Controllers
   final TextEditingController emailController = TextEditingController();
@@ -33,12 +32,7 @@ class _AuthPageState extends State<AuthPage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 12,
-                    )
-                  ],
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 12)],
                 ),
                 child: const Icon(
                   Icons.health_and_safety,
@@ -85,7 +79,9 @@ class _AuthPageState extends State<AuthPage> {
                         },
                         selectedColor: const Color(0xFF2CC295),
                         labelStyle: TextStyle(
-                          color: role == "Patient" ? Colors.white : Colors.black,
+                          color: role == "Patient"
+                              ? Colors.white
+                              : Colors.black,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -99,7 +95,9 @@ class _AuthPageState extends State<AuthPage> {
                         },
                         selectedColor: const Color(0xFF2CC295),
                         labelStyle: TextStyle(
-                          color: role == "Docteur" ? Colors.white : Colors.black,
+                          color: role == "Docteur"
+                              ? Colors.white
+                              : Colors.black,
                         ),
                       ),
                     ],
@@ -110,7 +108,7 @@ class _AuthPageState extends State<AuthPage> {
               _buildInputField(
                 label: "Email",
                 icon: Icons.email_outlined,
-                controller: emailController,   // 🔥 ajouté
+                controller: emailController, // 🔥 ajouté
               ),
 
               const SizedBox(height: 15),
@@ -145,7 +143,7 @@ class _AuthPageState extends State<AuthPage> {
                         color: Colors.black12,
                         blurRadius: 8,
                         offset: Offset(0, 3),
-                      )
+                      ),
                     ],
                   ),
                   child: DropdownButtonFormField<String>(
@@ -186,26 +184,28 @@ class _AuthPageState extends State<AuthPage> {
                 child: TextButton(
                   onPressed: () {
                     if (isLogin) {
-                    // 🔥 LOGIQUE SIMPLE DE CONNEXION
+                      // 🔥 LOGIQUE SIMPLE DE CONNEXION
                       String email = emailController.text.trim();
                       String pass = passwordController.text.trim();
 
                       if (email == "a" && pass == "a") {
-                            // 🔥 REDIRECTION vers la page du docteur
+                        // 🔥 REDIRECTION vers la page du docteur
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                             builder: (context) => const DoctorProfileScreen(),
+                            builder: (context) => const DoctorHomePage(),
                           ),
                         );
-                     } else {
-                       ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Identifiants incorrects ❌")),
-                       );
-                     }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Identifiants incorrects ❌"),
+                          ),
+                        );
+                      }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                           const SnackBar(content: Text("Inscription simulée ✔")),
+                        const SnackBar(content: Text("Inscription simulée ✔")),
                       );
                     }
                   },
@@ -280,11 +280,7 @@ class _AuthPageState extends State<AuthPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, 3),
-          )
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3)),
         ],
       ),
       child: TextField(
