@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 
 class DoctorHomePage extends StatelessWidget {
-  const DoctorHomePage({super.key});
+  const DoctorHomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      drawer: _buildDrawer(context),
+
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black87),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
+        ),
         title: const Text(
           "Dashboard Docteur",
           style: TextStyle(
@@ -23,96 +31,125 @@ class DoctorHomePage extends StatelessWidget {
         centerTitle: true,
       ),
 
-      //-------------------------------------- BODY --------------------------------------
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ---------------- PROFILE CARD ----------------
-            _profileCard(),
-
-            const SizedBox(height: 25),
-
-            // ---------------- MINI CALENDAR ----------------
+            // --------------------- MINI CALENDRIER --------------------
             const Text(
-              "Mon Calendrier",
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+              "Calendrier",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+
             _miniCalendar(),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 30),
 
-            // ---------------- STATISTICS GRAPH ----------------
+            // --------------------- STATISTIQUES ------------------------
             const Text(
               "Statistiques hebdomadaires",
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            _statisticsCard(),
-
-            const SizedBox(height: 25),
-
-            // ---------------- QUICK ACTIONS ----------------
-            const Text(
-              "Actions rapides",
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            _quickActions(context),
+            const SizedBox(height: 10),
           ],
         ),
       ),
     );
   }
 
-  // -------------------------------------------------------------------------
-  // PROFILE CARD
-  // -------------------------------------------------------------------------
-  Widget _profileCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3)),
-        ],
-      ),
-      child: Row(
+  // ---------------------------------------------------------------------------
+  // DRAWER / SIDE BAR
+  // ---------------------------------------------------------------------------
+
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const CircleAvatar(
-            radius: 32,
-            backgroundImage: AssetImage("assets/doctor.jpg"),
-          ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                "Dr. Ahmed Salmi",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 4),
-              Text(
-                "Cardiologue",
-                style: TextStyle(
-                  color: Colors.teal,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
+          DrawerHeader(
+            decoration: const BoxDecoration(color: Colors.teal),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                CircleAvatar(
+                  radius: 32,
+                  backgroundImage: AssetImage("assets/doctor.jpg"),
                 ),
-              ),
-            ],
+                SizedBox(height: 10),
+                Text(
+                  "Dr. Ahmed Salmi",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+                Text(
+                  "Cardiologue",
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+
+          // -------------------- AJOUT : PROFILE --------------------
+          ListTile(
+            leading: const Icon(Icons.person, color: Colors.deepPurple),
+            title: const Text("Profil"),
+            onTap: () {
+              Navigator.pushNamed(context, "/doctorProfile");
+            },
+          ),
+
+          // Planning
+          ListTile(
+            leading: const Icon(Icons.calendar_month, color: Colors.teal),
+            title: const Text("Mon planning"),
+            onTap: () {
+              Navigator.pushNamed(context, "/doctorSchedule");
+            },
+          ),
+
+          // Patients
+          ListTile(
+            leading: const Icon(Icons.person_search, color: Colors.blue),
+            title: const Text("Mes patients"),
+            onTap: () {},
+          ),
+
+          // -------------------- AJOUT : CONSULTATIONS --------------------
+          ListTile(
+            leading: const Icon(
+              Icons.medical_services,
+              color: Colors.redAccent,
+            ),
+            title: const Text("Rendez-vous"),
+            onTap: () {
+              Navigator.pushNamed(context, "/doctorConsultations");
+            },
+          ),
+
+          // Historiques
+          ListTile(
+            leading: const Icon(Icons.history, color: Colors.orange),
+            title: const Text("Historiques"),
+            onTap: () {},
+          ),
+
+          const Spacer(),
+
+          // Déconnexion
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text("Déconnexion"),
+            onTap: () {},
           ),
         ],
       ),
     );
   }
 
-  // -------------------------------------------------------------------------
-  // MINI CALENDAR
-  // -------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // MINI CALENDRIER
+  // ---------------------------------------------------------------------------
   Widget _miniCalendar() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -182,126 +219,49 @@ class DoctorHomePage extends StatelessWidget {
     );
   }
 
-  // -------------------------------------------------------------------------
-  // STATISTICS GRAPH
-  // -------------------------------------------------------------------------
-  Widget _statisticsCard() {
-    List<double> weeklyData = [3, 5, 6, 4, 7, 2, 5];
+  // ---------------------------------------------------------------------------
+  // GRAPHIQUE DE STATISTIQUES
+  // ---------------------------------------------------------------------------
+}
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-      ),
-      child: SizedBox(
-        height: 200,
-        child: CustomPaint(painter: LineChartPainter(weeklyData)),
-      ),
-    );
-  }
+// -----------------------------------------------------------------------------
+// WIDGET D'UN JOUR DU MINI CALENDRIER
+// -----------------------------------------------------------------------------
 
-  // -------------------------------------------------------------------------
-  // QUICK ACTIONS
-  // -------------------------------------------------------------------------
-  Widget _quickActions(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+class _CalendarDay extends StatelessWidget {
+  final String label;
+  final String day;
+
+  const _CalendarDay({required this.label, required this.day});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
       children: [
-        _actionCard(
-          icon: Icons.calendar_month,
-          color: Colors.teal,
-          title: "Planning",
-          onTap: () {
-            Navigator.pushNamed(context, "/doctorSchedule");
-          },
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        _actionCard(
-          icon: Icons.person_search,
-          color: Colors.blueAccent,
-          title: "Patients",
-          onTap: () {},
-        ),
-        _actionCard(
-          icon: Icons.history,
-          color: Colors.orangeAccent,
-          title: "Historiques",
-          onTap: () {},
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            day,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.teal,
+            ),
+          ),
         ),
       ],
     );
   }
-
-  Widget _actionCard({
-    required IconData icon,
-    required Color color,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        width: 100,
-        height: 115,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 34),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// -----------------------------------------------------------------------------
-// PAINTER FOR SIMPLE LINE CHART
-// -----------------------------------------------------------------------------
-class LineChartPainter extends CustomPainter {
-  final List<double> values;
-  LineChartPainter(this.values);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paintLine = Paint()
-      ..color = Colors.teal
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    double spacing = size.width / (values.length - 1);
-    double maxValue = values.reduce(max);
-
-    for (int i = 0; i < values.length; i++) {
-      double x = i * spacing;
-      double y = size.height - (values[i] / maxValue * size.height);
-
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
-
-    canvas.drawPath(path, paintLine);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
