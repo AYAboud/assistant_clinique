@@ -344,7 +344,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
           filled: true,
           fillColor: Colors.white,
         ),
-        value: _selectedSpecialty,
+        initialValue: _selectedSpecialty,
         hint: const Text('Sélectionnez votre spécialité'),
         items: _specialties.map((String specialty) {
           return DropdownMenuItem<String>(

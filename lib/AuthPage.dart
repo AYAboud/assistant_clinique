@@ -147,7 +147,7 @@ class _AuthPageState extends State<AuthPage> {
                     ],
                   ),
                   child: DropdownButtonFormField<String>(
-                    value: selectedRole,
+                    initialValue: selectedRole,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                       labelText: "Choisissez un rôle",

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
           0xFFF0F5F5,
         ), // Fond très clair pour correspondre au design
         appBarTheme: const AppBarTheme(
-          color: Color(0xFFF0F5F5),
+          backgroundColor: Color(0xFFF0F5F5),
           elevation: 0,
           iconTheme: IconThemeData(color: Colors.black),
           titleTextStyle: TextStyle(

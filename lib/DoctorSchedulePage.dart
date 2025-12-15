@@ -80,7 +80,7 @@ class _DoctorSchedulePageState extends State<DoctorSchedulePage> {
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
 
                     // ----------------------------------------------
                     // 🔥 Nouveau bouton "Ajouter un créneau"
@@ -130,9 +130,9 @@ class _DoctorSchedulePageState extends State<DoctorSchedulePage> {
                               ),
                             ).copyWith(
                               backgroundColor:
-                                  MaterialStateProperty.resolveWith((states) {
+                                  WidgetStateProperty.resolveWith((states) {
                                     if (states.contains(
-                                      MaterialState.pressed,
+                                      WidgetState.pressed,
                                     )) {
                                       return const Color(
                                         0xFF16A085,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'PatientHomePage.dart';
+import 'consultations_page.dart';
 
 class DoctorHomePage extends StatelessWidget {
-  const DoctorHomePage({Key? key}) : super(key: key);
+  const DoctorHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +114,14 @@ class DoctorHomePage extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.person_search, color: Colors.blue),
             title: const Text("Mes patients"),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PatientHomePage(),
+                ),
+              );
+            },
           ),
 
           // -------------------- AJOUT : CONSULTATIONS --------------------
@@ -123,7 +132,12 @@ class DoctorHomePage extends StatelessWidget {
             ),
             title: const Text("Rendez-vous"),
             onTap: () {
-              Navigator.pushNamed(context, "/doctorConsultations");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ConsultationsPage(),
+                ),
+              );
             },
           ),
 
