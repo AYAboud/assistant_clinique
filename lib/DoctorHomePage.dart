@@ -1,15 +1,85 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:http/http.dart' as http;
 import 'PatientHomePage.dart';
 import 'consultations_page.dart';
 
-class DoctorHomePage extends StatelessWidget {
+class DoctorHomePage extends StatefulWidget {
   const DoctorHomePage({super.key});
+
+  @override
+  _DoctorHomePageState createState() => _DoctorHomePageState();
+}
+
+class _DoctorHomePageState extends State<DoctorHomePage> {
+  int totalConsultations = 0;
+  int planned = 0;
+  int done = 0;
+  int canceled = 0;
+  int distinctPatients = 0;
+  Map<int, int> consultationsPerDay = {};
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchStats();
+  }
+
+  Future<void> fetchStats() async {
+    final doctorId = 1; // à rendre dynamique si besoin
+    try {
+      final totalRes = await http.get(
+        Uri.parse('http://localhost:8082/consultations/doctor/$doctorId/count'),
+      );
+      final plannedRes = await http.get(
+        Uri.parse(
+          'http://localhost:8082/consultations/doctor/$doctorId/count/status/PLANNED',
+        ),
+      );
+      final doneRes = await http.get(
+        Uri.parse(
+          'http://localhost:8082/consultations/doctor/$doctorId/count/status/DONE',
+        ),
+      );
+      final canceledRes = await http.get(
+        Uri.parse(
+          'http://localhost:8082/consultations/doctor/$doctorId/count/status/CANCELED',
+        ),
+      );
+      final patientsRes = await http.get(
+        Uri.parse(
+          'http://localhost:8082/consultations/doctor/$doctorId/count/patients',
+        ),
+      );
+      final statsRes = await http.get(
+        Uri.parse(
+          'http://localhost:8082/consultations/doctor/$doctorId/stats/days',
+        ),
+      );
+
+      setState(() {
+        totalConsultations = int.parse(totalRes.body);
+        planned = int.parse(plannedRes.body);
+        done = int.parse(doneRes.body);
+        canceled = int.parse(canceledRes.body);
+        distinctPatients = int.parse(patientsRes.body);
+        Map<String, dynamic> data = json.decode(statsRes.body);
+        consultationsPerDay = data.map(
+          (key, value) => MapEntry(int.parse(key), (value as num).toInt()),
+        );
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _buildDrawer(context),
-
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -17,9 +87,7 @@ class DoctorHomePage extends StatelessWidget {
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu, color: Colors.black87),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
+            onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
         title: const Text(
@@ -32,129 +100,142 @@ class DoctorHomePage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Calendrier",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  _miniCalendar(),
+                  const SizedBox(height: 30),
+                  const Text(
+                    "Statistiques clés",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 30, width: 20),
+                  Wrap(
+                    alignment:
+                        WrapAlignment.center, // 👈 THIS centers the cards
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      _statCard("Total", totalConsultations, Colors.teal),
+                      _statCard("PLANNED", planned, Colors.orange),
+                      _statCard("DONE", done, Colors.green),
+                      _statCard("CANCELED", canceled, Colors.red),
+                      _statCard("Patients", distinctPatients, Colors.blue),
+                    ],
+                  ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --------------------- MINI CALENDRIER --------------------
-            const Text(
-              "Calendrier",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 30),
+                  const Text(
+                    "Graphiques",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  // ---------------- Bar Chart ----------------
+                  SizedBox(
+                    height: 200,
+                    child: BarChart(
+                      BarChartData(
+                        alignment: BarChartAlignment.spaceAround,
+                        maxY: consultationsPerDay.values.isEmpty
+                            ? 1
+                            : consultationsPerDay.values
+                                  .reduce((a, b) => a > b ? a : b)
+                                  .toDouble(),
+                        barGroups: consultationsPerDay.entries
+                            .map(
+                              (e) => BarChartGroupData(
+                                x: e.key,
+                                barRods: [
+                                  BarChartRodData(
+                                    toY: e.value.toDouble(),
+                                    color: Colors.teal,
+                                  ),
+                                ],
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // ---------------- Pie Chart ----------------
+                  SizedBox(
+                    height: 200,
+                    child: PieChart(
+                      PieChartData(
+                        sections: [
+                          PieChartSectionData(
+                            value: planned.toDouble(),
+                            color: Colors.orange,
+                            title: "PLANNED",
+                          ),
+                          PieChartSectionData(
+                            value: done.toDouble(),
+                            color: Colors.green,
+                            title: "DONE",
+                          ),
+                          PieChartSectionData(
+                            value: canceled.toDouble(),
+                            color: Colors.red,
+                            title: "CANCELED",
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // TODO: Ajouter LineChart pour évolution hebdomadaire
+                ],
+              ),
             ),
-            const SizedBox(height: 10),
-
-            _miniCalendar(),
-
-            const SizedBox(height: 30),
-
-            // --------------------- STATISTIQUES ------------------------
-            const Text(
-              "Statistiques hebdomadaires",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-          ],
-        ),
-      ),
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // DRAWER / SIDE BAR
-  // ---------------------------------------------------------------------------
-
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
+  Widget _statCard(String label, int value, Color color) {
+    return Container(
+      width: 150,
+      height: 110,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(color: Colors.teal),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundImage: AssetImage("assets/doctor.jpg"),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Dr. Ahmed Salmi",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-                Text(
-                  "Cardiologue",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
+          Text(
+            "$value",
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
-
-          // -------------------- AJOUT : PROFILE --------------------
-          ListTile(
-            leading: const Icon(Icons.person, color: Colors.deepPurple),
-            title: const Text("Profil"),
-            onTap: () {
-              Navigator.pushNamed(context, "/doctorProfile");
-            },
-          ),
-
-          // Planning
-          ListTile(
-            leading: const Icon(Icons.calendar_month, color: Colors.teal),
-            title: const Text("Mon planning"),
-            onTap: () {
-              Navigator.pushNamed(context, "/doctorSchedule");
-            },
-          ),
-
-          // Patients
-          ListTile(
-            leading: const Icon(Icons.person_search, color: Colors.blue),
-            title: const Text("Mes patients"),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PatientHomePage(),
-                ),
-              );
-            },
-          ),
-
-          // -------------------- AJOUT : CONSULTATIONS --------------------
-          ListTile(
-            leading: const Icon(
-              Icons.medical_services,
-              color: Colors.redAccent,
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.white70,
             ),
-            title: const Text("Rendez-vous"),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ConsultationsPage(),
-                ),
-              );
-            },
-          ),
-
-          // Historiques
-          ListTile(
-            leading: const Icon(Icons.history, color: Colors.orange),
-            title: const Text("Historiques"),
-            onTap: () {},
-          ),
-
-          const Spacer(),
-
-          // Déconnexion
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text("Déconnexion"),
-            onTap: () {},
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -170,7 +251,7 @@ class DoctorHomePage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.teal,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,
@@ -178,7 +259,6 @@ class DoctorHomePage extends StatelessWidget {
           ),
         ],
       ),
-
       child: Column(
         children: [
           const Text(
@@ -234,48 +314,78 @@ class DoctorHomePage extends StatelessWidget {
   }
 
   // ---------------------------------------------------------------------------
-  // GRAPHIQUE DE STATISTIQUES
+  // DRAWER
   // ---------------------------------------------------------------------------
-}
-
-// -----------------------------------------------------------------------------
-// WIDGET D'UN JOUR DU MINI CALENDRIER
-// -----------------------------------------------------------------------------
-
-class _CalendarDay extends StatelessWidget {
-  final String label;
-  final String day;
-
-  const _CalendarDay({required this.label, required this.day});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            day,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.teal,
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(color: Colors.teal),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                CircleAvatar(
+                  radius: 32,
+                  backgroundImage: AssetImage("assets/doctor.jpg"),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Dr. Ahmed Salmi",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+                Text(
+                  "Cardiologue",
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          ListTile(
+            leading: const Icon(Icons.person, color: Colors.deepPurple),
+            title: const Text("Profil"),
+            onTap: () => Navigator.pushNamed(context, "/doctorProfile"),
+          ),
+          ListTile(
+            leading: const Icon(Icons.calendar_month, color: Colors.teal),
+            title: const Text("Mon planning"),
+            onTap: () => Navigator.pushNamed(context, "/doctorSchedule"),
+          ),
+          ListTile(
+            leading: const Icon(Icons.person_search, color: Colors.blue),
+            title: const Text("Mes patients"),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PatientHomePage()),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(
+              Icons.medical_services,
+              color: Colors.redAccent,
+            ),
+            title: const Text("Rendez-vous"),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ConsultationsPage(),
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.history, color: Colors.orange),
+            title: const Text("Historiques"),
+            onTap: () {},
+          ),
+          const Spacer(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text("Déconnexion"),
+            onTap: () {},
+          ),
+        ],
+      ),
     );
   }
 }

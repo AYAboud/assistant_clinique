@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'DoctorSchedulePage.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 // --- (Optionnel) Classe Doctor pour la cohérence des données ---
 class Doctor {
